@@ -53,7 +53,8 @@ où :
 
 Ainsi, la Figure représentée ci-dessous est obtenue. La sphère, représentée avec un albedo rouge, est bien rendue en rouge, et le reste demeure en noir.
 
-![Alt text](img\sphere_eclaire_albedo.png)
+<img src="img\sphere_eclaire_albedo.png" alt="Alt Text">
+
 
 L'implémentation de cette partie est donnée dans le fichier `sphere_eclaire.cpp`, pour l'exécuter il suffit d'exécuter cette commande dans un terminale: 
 

@@ -119,16 +119,12 @@ class sphere {
         double t2 = (-b + sqrtdelta) / (2 * a);
         if (t2 < 0) return false;
         double t;
-
         if (t1>0) 
             t = t1;
         else
             t = t2;
         P = r.O + t*r.u;
         N = (P-C).getNormalized();
-
-
-
         return true; 
     }
 };

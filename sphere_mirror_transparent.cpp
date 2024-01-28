@@ -149,7 +149,7 @@ Vector getColor(const Ray &r, Scene &s, int nprebonds){
             Vector intensite_pix(0,0,0);
                     if (has_inter) {
 
-                                    if (s.spheres[sphere_id].transparent) {
+                        if (s.spheres[sphere_id].transparent) {
                         double n1 = 1;
                         double n2 = 1.3;
                         Vector normale_pour_transparence(N);
@@ -173,6 +173,8 @@ Vector getColor(const Ray &r, Scene &s, int nprebonds){
                         intensite_pix = getColor(rayon_miroir, s, nprebonds - 1);
                     } 
                     else {
+
+                    // Eclairage direct
                         
                         Ray rayon_sec(P + 0.001*N, (s.position_lumiere-P).getNormalized());
                         Vector P_sec, N_sec;

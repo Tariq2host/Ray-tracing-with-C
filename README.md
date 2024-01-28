@@ -21,6 +21,8 @@ Si l'intersection existe (au moins une solution t positive), le pixel correspond
 
 ![Alt text](image.png)
 
+![Alt text](image-1.png)
+
 
 ### Classes Implémentées :
 
@@ -48,9 +50,6 @@ où :
 - $\(I\)$ est l'intensité de la source lumineuse au point L.
 - $\(\mathbf{N}\)$ est la normale à l'objet (la sphère) au point P (vecteur unitaire).
 - $\(\rho\)$ est l'albédo de la sphère, c'est-à-dire la fraction de la lumière que la sphère réfléchit.
-
-![Alt text](image-1.png)
-
 
 Ainsi, la Figure représentée ci-dessous est obtenue. La sphère, représentée avec un albedo rouge, est bien rendue en rouge, et le reste demeure en noir. Cette fois-ci, le volume de la sphère est mieux apprécié, et la localisation de la source de lumière est clairement identifiable grâce aux variations d'intensité lumineuse (les ombres sont mieux représentées). Ce raytracer est plus performant que celui de la version précédente.
 

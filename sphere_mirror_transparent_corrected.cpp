@@ -148,6 +148,7 @@ Vector getColor(Ray &r, const Scene &s, int nbrebonds) {
     int sphere_id;
     double t;
     bool has_inter = s.intersection(r, P, N, sphere_id, t);
+    Vector ambient_light(0.1, 0.1, 0.1);
 
     Vector intensite_pix(0, 0, 0);
     if (has_inter) {
@@ -184,10 +185,13 @@ Vector getColor(Ray &r, const Scene &s, int nbrebonds) {
             bool has_inter_light = s.intersection(ray_light, P_light, N_light, sphere_id_light, t_light);
             double d_light2 = (s.position_lumiere - P).norm2();
             if (has_inter_light && t_light * t_light < d_light2) {
-                intensite_pix = Vector(0, 0, 0);
+                intensite_pix = Vector(1, 1, 1);
             }
             else {
-                intensite_pix = s.spheres[sphere_id].albedo * (s.intensite_lumiere * std::max(0., dot((s.position_lumiere - P).getNormalized(), N)) / (s.position_lumiere - P).norm2());
+                double d_light2_inv = 1 / d_light2;
+                Vector light_dir_normalized = (s.position_lumiere - P).getNormalized();
+                double light_intensity = s.intensite_lumiere * std::max(0., dot(light_dir_normalized, N)) * d_light2_inv;
+                intensite_pix = s.spheres[sphere_id].albedo * light_intensity + ambient_light; 
             }
         }
     }
@@ -199,13 +203,17 @@ int main() {
     int H = 512;
     double fov = 60 * M_PI / 100;
 
-    Sphere s0(Vector(-30, -2, -55), 15, Vector(1, 0, 0), false, true);  // Soft pink left sphere
-    Sphere s1(Vector( 20, -2, -55), 20, Vector(1, 0, 0), true);  
-    Sphere s2(Vector(0, -2000 - 20, 0), 2000, Vector(1, 1, 1)); //sol
-    Sphere s3(Vector(0, 2000 + 100, 0), 2000, Vector(1, 1, 1)); // plafond
-    Sphere s4(Vector(-2000 - 50, 0, 0), 2000, Vector(0, 1, 0)); // mur gauche
-    Sphere s5(Vector(2000 + 50, 0, 0), 2000, Vector(0, 0, 1)); // mur droit
-    Sphere s6(Vector(0, 0, -2000 - 100), 2000, Vector(0, 1, 1)); // mur fond
+    Vector deepBlue(0x12 / 255.0, 0x54 / 255.0, 0x88 / 255.0);     // #125488
+    Vector lightBlue(0x3D / 255.0, 0xDD / 255.0, 0xD6 / 255.0);     // #3DDDD6
+    Vector veryLightBlue(0xAD / 255.0, 0xDD / 255.0, 0x98 / 255.0); // #ADDD98
+
+    Sphere s0(Vector(-30, -2, -55), 10, lightBlue, false, true);      // Left sphere, light blue
+    Sphere s1(Vector( 20, -2, -55), 15, deepBlue, true);              // Right sphere, deep blue
+    Sphere s2(Vector(0, -2000 - 20, 0), 2000, veryLightBlue);        // Floor, very light blue
+    Sphere s3(Vector(0, 2000 + 100, 0), 2000, Vector(1,1,1));        // Ceiling, very light blue
+    Sphere s4(Vector(-2000 - 50, 0, 0), 2000, lightBlue);            // Left wall, light blue
+    Sphere s5(Vector(2000 + 50, 0, 0), 2000, lightBlue);             // Right wall, light blue
+    Sphere s6(Vector(0, 0, -2000 - 100), 2000, deepBlue);            // Back wall, deep blue
 
     Scene s;
     s.addSphere(s1);
@@ -216,7 +224,7 @@ int main() {
     s.addSphere(s5);
     s.addSphere(s6);
     s.position_lumiere = Vector(15, 60, -40);
-    s.intensite_lumiere = 100000000;
+    s.intensite_lumiere = 1500000000;  // Brighter light source
 
     std::vector<unsigned char> image(W * H * 3, 0);
 #pragma omp parallel for

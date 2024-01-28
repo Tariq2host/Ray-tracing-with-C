@@ -5,6 +5,9 @@ __pycache__/
 
 .exe
 .exe/
+main.exe
+
+.vscode/
 
 # fichier mac
 .DS_Store

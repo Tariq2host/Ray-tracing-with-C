@@ -53,7 +53,7 @@ où :
 
 Ainsi, la Figure représentée ci-dessous est obtenue. La sphère, représentée avec un albedo rouge, est bien rendue en rouge, et le reste demeure en noir.
 
-<div style="text-align: center;">
+<div align = "center">
 <img src="img\sphere_eclaire_albedo.png" alt="Alt Text">
 </div>
 
@@ -122,7 +122,7 @@ L'implémentation de cette partie est donnée dans le fichier `sphere_scenes_sha
 ```
 g++ -o main sphere_scenes_shadow.cpp
 ```
-<div style="text-align: center;">
+<div align = "center">
 <img src="img\sphere_scenes_shadow.png" alt="Alt Text">
 </div>
 
@@ -150,7 +150,7 @@ L'implémentation de cette partie est donnée dans le fichier `sphere_scenes_sha
 g++ -o main sphere_scenes_shadow_mirror.cpp
 ```
 
-<div style="text-align: center;">
+<div align = "center">
 <img src="img\sphere_scenes_mirror.png" alt="Alt Text">
 </div>
 
@@ -181,6 +181,6 @@ L'implémentation de cette partie est donnée dans le fichier `sphere_mirror_tra
 g++ -o main sphere_scenes_shadow_mirror.cpp
 ```
 
-<div style="text-align: center;">
+<div align = "center">
 <img src="img\scene_transparant.png" alt="Alt Text">
 </div>

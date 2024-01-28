@@ -84,9 +84,12 @@ L'implémentation de cette partie est donnée dans le fichier `sphere_scenes.cpp
 g++ -o main sphere_scenes.cpp
 ```
 
-![Alt text](img\scene_ill.png)
+<div align = "center">
+<img src="img\scene_ill.png" alt="Alt Text">
+</div>
 
-<div style="text-align: center;">
+
+<div align = "center">
 <img src="img\sphere_scenes.png" alt="Alt Text">
 </div>
 

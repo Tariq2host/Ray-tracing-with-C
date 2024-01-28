@@ -19,9 +19,9 @@ t<sup>2</sup> + 2.t.<u,CO> + ||CO||<sup>2</sup> - R<sup>2</sup> = 0
 
 Si l'intersection existe (au moins une solution t positive), le pixel correspondant est représenté en blanc ; sinon, il reste noir.
 
-![Alt text](image.png)
+![Alt text](img/raytracing_ill.png)
 
-![Alt text](image-2.png)
+![Alt text](img/sphere_pix-1.png)
 
 
 ### Classes Implémentées :
@@ -76,14 +76,15 @@ Deux murs, respectivement de couleur bleue et rouge, situés à gauche et à dro
 Deux murs en face de la caméra et derrière la caméra (invisible donc), respectivement de couleur verte et magenta.
 Un mur au sol de couleur blanche.
 
-![Alt text](img\image-2.png)
-![Alt text](img\sphere_scenes.png)
-
 L'implémentation de cette partie est donnée dans le fichier `sphere_scenes.cpp`, pour l'exécuter il suffit d'exécuter cette commande dans un terminale: 
 
 ```
 g++ -o main sphere_scenes.cpp
 ```
+
+![Alt text](img\scene_ill.png)
+![Alt text](img\sphere_scenes.png)
+
 
 Le bruit provient des incertitudes de calcul dues à la précision numérique de la machine. Ainsi, le point d'intersection peut se retrouver à l'intérieur de la surface au lieu d'être sur la surface. Pour remédier à cela, on déplace le point d'intersection d'une petite quantité $\(\epsilon\)$ vers l'extérieur de l'objet.
 
@@ -97,9 +98,9 @@ Nous cherchons ici à améliorer le contraste des objets. En effet, dans la dern
 
 La **correction Gamma** est utilisée pour améliorer le contraste en effectuant une opération simple sur l'intensité lumineuse calculée pour chaque pixel :
 
-\[ I = I_{\text{calculée}}^{1/\gamma} \]
+$\[ I = I_{\text{calculée}}^{1/\gamma} \]$
 
-avec \(\gamma = 2,2\) et \(1/\gamma = 0,45\).
+avec $\(\gamma = 2,2\) et \(1/\gamma = 0,45\)$.
 
 Cette opération permet de ajuster l'intensité lumineuse, améliorant ainsi le contraste des objets dans la scène. Le paramètre \(\gamma\) joue un rôle crucial dans cette correction, et les valeurs spécifiées (2,2 et 0,45) sont couramment utilisées pour obtenir des résultats visuellement satisfaisants.
 
@@ -131,9 +132,41 @@ Le rayon incident \(i\) est réfléchi par la surface miroir en un rayon $\(r\)$
 
 $\[ r = i - 2\langle i, \mathbf{N} \rangle \mathbf{N} \]$
 
-![Alt text](image-3.png)
+![Alt text](img/mirror_ill.png)
 
 Cette formulation reflète le rayon par rapport à la normale de la surface. Cette fonction de réflexion permet de simuler le comportement des surfaces miroir dans la scène, ajoutant ainsi des éléments de réalisme et de complexité visuelle au rendu final du raytracer.
+L'implémentation de cette partie est donnée dans le fichier `sphere_scenes_shadow_mirror.cpp`, pour l'exécuter il suffit d'exécuter cette commande dans un terminale: 
+
+```
+g++ -o main sphere_scenes_shadow_mirror.cpp
+```
+![Alt text](img\sphere_scenes_mirror.png)
 
 
 
+### Surfaces Transparentes :
+
+Nous explorons ici la représentation d'un autre type de surface : les surfaces transparentes.
+
+Nous faisons l'hypothèse qu'une surface transparente réfléchit l'intégralité d'un rayon ou transmet l'intégralité du rayon, sans tenir compte de la transmission de Fresnel.
+
+Nous utilisons la loi de Snell-Descartes. Pour une surface de normale $\( \mathbf{N} \)$ séparant deux milieux d'indices respectifs $\( n_1 \)$ et $\( n_2 \)$, un rayon incident dans le milieu d'indice $\( n_1 \)$ avec un angle $\( \theta_i \)$ est transmis dans le milieu d'indice $\( n_2 \)$ avec un angle $\( \theta_t \)$ tel que :
+
+$\[ n_1 \sin(\theta_i) = n_2 \sin(\theta_t) \]$
+
+Grâce à cette loi, on peut exprimer les composantes tangentielle et normale du vecteur unitaire directeur du rayon transmis $\( \mathbf{T} \)$ :
+
+$\[ \mathbf{T}_N = - \sqrt{1 - \left(\frac{n_1}{n_2}\right)^2(1-\langle \mathbf{i}, \mathbf{N} \rangle^2)} \mathbf{N} \]$
+
+$\[ \mathbf{T}_T = \frac{n_1}{n_2} (\mathbf{i} - \langle \mathbf{i}, \mathbf{N} \rangle \mathbf{N}) \]$
+
+En connaissant la direction du rayon transmis par la surface transparente, il devient possible de déterminer la couleur du pixel à afficher en recherchant l'intersection de ce rayon avec le reste de la scène.
+
+Cette approche permet de simuler le comportement des surfaces transparentes, ajoutant ainsi une dimension de réalisme et de sophistication visuelle au rendu final du raytracer.
+
+L'implémentation de cette partie est donnée dans le fichier `sphere_mirror_transparent.cpp`, pour l'exécuter il suffit d'exécuter cette commande dans un terminale: 
+
+```
+g++ -o main sphere_scenes_shadow_mirror.cpp
+```
+![Alt text](img\scene_transparant.png)

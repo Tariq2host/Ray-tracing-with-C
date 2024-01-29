@@ -207,7 +207,7 @@ Avec le pathtracer actuel, les surfaces éclairées de manière rasante présent
 
 L'idée sous-jacente est que chaque rayon atteignant un pixel de la caméra est la combinaison de la lumière réfléchie par la source lumineuse ponctuelle sur la surface intersectée, ainsi qu'une quantité de lumière provenant de la réflexion d'autres rayons sur des surfaces.
 
-La première quantité est celle que nous calculons déjà.
+La première quantité est celle de l'eclairage emis.
 
 La deuxième se calcule avec l'intégrale sur la demi-sphère $S^+$ de la quantité :
 
@@ -218,6 +218,10 @@ où $f$ est la BRDF (Bidirectional Reflectance Distribution Function) telle que 
 - $\( f \geq 0 \)$
 - $\( f(\mathbf{wi}, \mathbf{wo}) = f(\mathbf{wo}, \mathbf{wi}) \)$ (condition de réciprocité)
 - $\( \int f(\mathbf{wi}, \mathbf{wo}) \cdot \cos(\mathbf{wi}) \, d\mathbf{wi} \leq 1 \)$ pour tout $\(\mathbf{wo}\)$ (conservation de l'énergie).
+
+Cependant, cette intégrale peut être difficile voire impossible à évaluer de manière analytique en raison de sa complexité. Dans la pratique, plusieurs techniques numériques, telles que la méthode de Monte Carlo, sont utilisées pour approximer cette intégrale.
+
+La méthode de Monte Carlo implique l'échantillonnage aléatoire de directions de lumière incidente wi selon une distribution probabiliste, puis la moyenne des contributions lumineuses calculées pour chaque échantillon.
 
 Le calcul de l'intensité lumineuse sur un pixel de l'écran constitue une équation de Fredholm du 2ᵉ type. En d'autres termes, le calcul de l'intensité d'un rayon nécessite le calcul de l'intensité d'un autre rayon. Il est possible de calculer l'émission du rayon arrivant sur l'écran en se limitant à un nombre de rebonds, par exemple 5 rebonds, et en calculant récursivement l'intensité du rayon, comme pour les miroirs et les surfaces transparentes.
 
@@ -230,29 +234,12 @@ $\[ \mathbf{wi} = z\mathbf{N} + x\mathbf{T1} + y\mathbf{T2} \]$
 avec :
 
 $\[ x = \cos(2\pi r_1) \sqrt{1 - r_2} \]$
+
 $\[ y = \sin(2\pi r_1) \sqrt{1 - r_1} \]$
+
 $\[ z = \sqrt{r_2} \]$
 
-où $\( z \)$ est dirigé par $\(\mathbf{N}\)$, puis $\(\mathbf{T1}\)$ est calculé selon la valeur minimale de $\( \mathbf{N} \)$ afin de s'assurer que $\( \mathbf{N} \)$ n'est pas égal à $\((0,0,1)\)$ et ainsi $\( \mathbf{T} = 0 \)$ :
-
-- **T1** = (-N<sub>y</sub>,N<sub>x</sub>,0) si N<sub>z</sub> est minimale
-- **T1** = (N<sub>z</sub>,0,-N<sub>x</sub>) si N<sub>y</sub> est minimale
-- **T1** = (0,-N<sub>z</sub>,N<sub>y</sub>) si N<sub>x</sub> est minimale
-
-et **T2** = **N**&#10799;**T1**
-
-Le calcul d'un seul rayon indirect par surface est amélioré en générant un certain nombre de rayons par pixel de l'écran, par exemple 100 rayons, qui se propagent de manière différente (de manière aléatoire), et dont on moyenne les intensités lumineuses pour obtenir l'intensité moyenne du pixel.
-
-**Génération de nombres aléatoires :**
-La génération de nombres aléatoires est effectuée en utilisant la formule de Box-Muller.
-
-On génère deux nombres aléatoires $\( u_1 \) et \( u_2 \)$ suivant une loi uniforme sur [0,1], puis on calcule deux nombres aléatoires :
-
-$\[ x_1 = \sigma \cdot \cos(2 \pi u_1) \cdot \sqrt{-2 \log(u_2)} \]$
-$\[ x_2 = \sigma \cdot \sin(2 \pi u_1) \cdot \sqrt{-2 \log(u_2)} \]$
-
-Ainsi, $\( x_1 \) et \( x_2 \)$ suivent alors une loi Gaussienne d'écart-type $\( \sigma \)$.
-
+![Alt text](img\Eclairage_indirect_ill.png)
 
 <div align = "center">
 <img src="img\Eclairage_indirect.png" alt="Alt Text">

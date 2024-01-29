@@ -239,6 +239,8 @@ $\[ y = \sin(2\pi r_1) \sqrt{1 - r_1} \]$
 
 $\[ z = \sqrt{r_2} \]$
 
+et r1 et r2 sont génerés aléatoirement avec une loi Uniforme [0,1]
+
 <div align = "center">
 <img src="img\Eclairage_indirect_ill.png" alt="Alt Text">
 </div>

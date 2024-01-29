@@ -258,3 +258,8 @@ Ainsi, $\( x_1 \) et \( x_2 \)$ suivent alors une loi Gaussienne d'écart-type $
 <img src="img\Eclairage_indirect.png" alt="Alt Text">
 </div>
 
+<div align = "center">
+<img src="img\Eclairage_indirect_mirror.png" alt="Alt Text">
+</div>
+
+

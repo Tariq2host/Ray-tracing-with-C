@@ -204,9 +204,8 @@ int main() {
     double fov = 60 * M_PI / 100;
     int nrays = 80;
 
-    Sphere s0(Vector(-30, -2, -55), 15, Vector(1,1,1), false);  // Sphère à gauche
+    Sphere s0(Vector(-30, -2, -55), 15, Vector(1,1,1), true);  // Sphère à gauche
     Sphere s1(Vector( 20, -2, -55), 20, Vector(1,0,0), false);  // Sphère à droite
-
     Sphere s2(Vector(0, -2000-20, 0), 2000, Vector(1,1,1)); //sol
     Sphere s3(Vector(0, 2000+100, 0), 2000, Vector(1,1,1)); // plafond
     Sphere s4(Vector(-2000-50,0, 0), 2000, Vector(0,1,0)); // mur gauche

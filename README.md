@@ -211,45 +211,46 @@ La première quantité est celle que nous calculons déjà.
 
 La deuxième se calcule avec l'intégrale sur la demi-sphère $S^+$ de la quantité :
 
-$ \int f(\mathbf{wi}, \mathbf{wo}) \cdot L(\mathbf{wi}) \cdot \langle \mathbf{N}, \mathbf{wi} \rangle \, d\mathbf{wi} $
+$\[ \int f(\mathbf{wi}, \mathbf{wo}) \cdot L(\mathbf{wi}) \cdot \langle \mathbf{N}, \mathbf{wi} \rangle \, d\mathbf{wi} \]$
 
-où $ f $ est la BRDF (Bidirectional Reflectance Distribution Function) telle que :
+où $f$ est la BRDF (Bidirectional Reflectance Distribution Function) telle que :
 
-- $ f \geq 0 $
-- $ f(\mathbf{wi}, \mathbf{wo}) = f(\mathbf{wo}, \mathbf{wi}) $ (condition de réciprocité)
-- $ \int f(\mathbf{wi}, \mathbf{wo}) \cdot \cos(\mathbf{wi}) \, d\mathbf{wi} \leq 1 $ pour tout $\mathbf{wo}$ (conservation de l'énergie).
+- $\( f \geq 0 \)$
+- $\( f(\mathbf{wi}, \mathbf{wo}) = f(\mathbf{wo}, \mathbf{wi}) \)$ (condition de réciprocité)
+- $\( \int f(\mathbf{wi}, \mathbf{wo}) \cdot \cos(\mathbf{wi}) \, d\mathbf{wi} \leq 1 \) pour tout \(\mathbf{wo}\)$ (conservation de l'énergie).
 
 Le calcul de l'intensité lumineuse sur un pixel de l'écran constitue une équation de Fredholm du 2ᵉ type. En d'autres termes, le calcul de l'intensité d'un rayon nécessite le calcul de l'intensité d'un autre rayon. Il est possible de calculer l'émission du rayon arrivant sur l'écran en se limitant à un nombre de rebonds, par exemple 5 rebonds, et en calculant récursivement l'intensité du rayon, comme pour les miroirs et les surfaces transparentes.
 
 La problématique ici est qu'un nombre infini de rayons contribuent à l'éclairage indirect, mais pour des raisons de performance, il n'est pas possible de tous les prendre en compte. Ainsi, on se limite à un rayon par surface.
 
-Le rayon $\mathbf{wi}$ est dirigé par les vecteurs $\mathbf{N}$, $\mathbf{T1}$ et $\mathbf{T2}$ tels que :
+Le rayon $\(\mathbf{wi}\)$ est dirigé par les vecteurs $\(\mathbf{N}, \mathbf{T1}\) et \(\mathbf{T2}\)$ tels que :
 
-$ \mathbf{wi} = z\mathbf{N} + x\mathbf{T1} + y\mathbf{T2} $
+$\[ \mathbf{wi} = z\mathbf{N} + x\mathbf{T1} + y\mathbf{T2} \]$
 
 avec :
 
-$ x = \cos(2\pi r_1) \sqrt{1 - r_2} $
-$ y = \sin(2\pi r_1) \sqrt{1 - r_1} $
-$ z = \sqrt{r_2} $
+$\[ x = \cos(2\pi r_1) \sqrt{1 - r_2} \]$
+$\[ y = \sin(2\pi r_1) \sqrt{1 - r_1} \]$
+$\[ z = \sqrt{r_2} \]$
 
-où $ z $ est dirigé par $\mathbf{N}$, puis $\mathbf{T1}$ est calculé selon la valeur minimale de $\mathbf{N}$ afin de s'assurer que $\mathbf{N}$ n'est pas égal à $(0,0,1)$ et ainsi $\mathbf{T} = 0$ :
+où $\( z \) est dirigé par \(\mathbf{N}\), puis \(\mathbf{T1}\) est calculé selon la valeur minimale de \( \mathbf{N} \) afin de s'assurer que \( \mathbf{N} \) n'est pas égal à \((0,0,1)\) et ainsi \( \mathbf{T} = 0 \)$ :
 
-$ \mathbf{T1} = \begin{cases} (-N_y, N_x, 0) & \text{si } N_z \text{ est minimale} \\ (N_z, 0, -N_x) & \text{si } N_y \text{ est minimale} \\ (0, -N_z, N_y) & \text{si } N_x \text{ est minimale} \end{cases} $
+$\[ \mathbf{T1} = \begin{cases} (-N_y, N_x, 0) & \text{si } N_z \text{ est minimale} \\ (N_z, 0, -N_x) & \text{si } N_y \text{ est minimale} \\ (0, -N_z, N_y) & \text{si } N_x \text{ est minimale} \end{cases} \]$
 
-et $\mathbf{T2} = \mathbf{N} \times \mathbf{T1}$.
+et $\( \mathbf{T2} = \mathbf{N} \times \mathbf{T1} \)$.
 
 Le calcul d'un seul rayon indirect par surface est amélioré en générant un certain nombre de rayons par pixel de l'écran, par exemple 100 rayons, qui se propagent de manière différente (de manière aléatoire), et dont on moyenne les intensités lumineuses pour obtenir l'intensité moyenne du pixel.
 
 **Génération de nombres aléatoires :**
 La génération de nombres aléatoires est effectuée en utilisant la formule de Box-Muller.
 
-On génère deux nombres aléatoires $ u_1 $ et $ u_2 $ suivant une loi uniforme sur [0,1], puis on calcule deux nombres aléatoires :
+On génère deux nombres aléatoires $\( u_1 \) et \( u_2 \)$ suivant une loi uniforme sur [0,1], puis on calcule deux nombres aléatoires :
 
-$ x_1 = \sigma \cdot \cos(2 \pi u_1) \cdot \sqrt{-2 \log(u_2)} $
-$ x_2 = \sigma \cdot \sin(2 \pi u_1) \cdot \sqrt{-2 \log(u_2)} $
+$\[ x_1 = \sigma \cdot \cos(2 \pi u_1) \cdot \sqrt{-2 \log(u_2)} \]$
+$\[ x_2 = \sigma \cdot \sin(2 \pi u_1) \cdot \sqrt{-2 \log(u_2)} \]$
 
-Ainsi, $ x_1 $ et $ x_2 $ suivent alors une loi Gaussienne d'écart-type $ \sigma $.
+Ainsi, $\( x_1 \) et \( x_2 \)$ suivent alors une loi Gaussienne d'écart-type $\( \sigma \)$.
+
 
 <div align = "center">
 <img src="img\Eclairage_indirect.png" alt="Alt Text">

@@ -217,7 +217,7 @@ où $f$ est la BRDF (Bidirectional Reflectance Distribution Function) telle que 
 
 - $\( f \geq 0 \)$
 - $\( f(\mathbf{wi}, \mathbf{wo}) = f(\mathbf{wo}, \mathbf{wi}) \)$ (condition de réciprocité)
-- $\( \int f(\mathbf{wi}, \mathbf{wo}) \cdot \cos(\mathbf{wi}) \, d\mathbf{wi} \leq 1 \) pour tout \(\mathbf{wo}\)$ (conservation de l'énergie).
+- $\( \int f(\mathbf{wi}, \mathbf{wo}) \cdot \cos(\mathbf{wi}) \, d\mathbf{wi} \leq 1 \)$ pour tout $\(\mathbf{wo}\)$ (conservation de l'énergie).
 
 Le calcul de l'intensité lumineuse sur un pixel de l'écran constitue une équation de Fredholm du 2ᵉ type. En d'autres termes, le calcul de l'intensité d'un rayon nécessite le calcul de l'intensité d'un autre rayon. Il est possible de calculer l'émission du rayon arrivant sur l'écran en se limitant à un nombre de rebonds, par exemple 5 rebonds, et en calculant récursivement l'intensité du rayon, comme pour les miroirs et les surfaces transparentes.
 
@@ -233,7 +233,7 @@ $\[ x = \cos(2\pi r_1) \sqrt{1 - r_2} \]$
 $\[ y = \sin(2\pi r_1) \sqrt{1 - r_1} \]$
 $\[ z = \sqrt{r_2} \]$
 
-où $\( z \) est dirigé par \(\mathbf{N}\), puis \(\mathbf{T1}\) est calculé selon la valeur minimale de \( \mathbf{N} \) afin de s'assurer que \( \mathbf{N} \) n'est pas égal à \((0,0,1)\) et ainsi \( \mathbf{T} = 0 \)$ :
+où $\( z \)$ est dirigé par $\(\mathbf{N}\)$, puis $\(\mathbf{T1}\)$ est calculé selon la valeur minimale de $\( \mathbf{N} \)$ afin de s'assurer que $\( \mathbf{N} \)$ n'est pas égal à $\((0,0,1)\)$ et ainsi $\( \mathbf{T} = 0 \)$ :
 
 $\[ \mathbf{T1} = \begin{cases} (-N_y, N_x, 0) & \text{si } N_z \text{ est minimale} \\ (N_z, 0, -N_x) & \text{si } N_y \text{ est minimale} \\ (0, -N_z, N_y) & \text{si } N_x \text{ est minimale} \end{cases} \]$
 

@@ -239,7 +239,9 @@ $\[ y = \sin(2\pi r_1) \sqrt{1 - r_1} \]$
 
 $\[ z = \sqrt{r_2} \]$
 
-![Alt text](img\Eclairage_indirect_ill.png)
+<div align = "center">
+<img src="img\Eclairage_indirect_ill.png" alt="Alt Text">
+</div>
 
 <div align = "center">
 <img src="img\Eclairage_indirect.png" alt="Alt Text">

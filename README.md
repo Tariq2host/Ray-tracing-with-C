@@ -235,9 +235,11 @@ $\[ z = \sqrt{r_2} \]$
 
 où $\( z \)$ est dirigé par $\(\mathbf{N}\)$, puis $\(\mathbf{T1}\)$ est calculé selon la valeur minimale de $\( \mathbf{N} \)$ afin de s'assurer que $\( \mathbf{N} \)$ n'est pas égal à $\((0,0,1)\)$ et ainsi $\( \mathbf{T} = 0 \)$ :
 
-$\[ \mathbf{T1} = \begin{cases} (-N_y, N_x, 0) & \text{si } N_z \text{ est minimale} \\ (N_z, 0, -N_x) & \text{si } N_y \text{ est minimale} \\ (0, -N_z, N_y) & \text{si } N_x \text{ est minimale} \end{cases} \]$
+- **T1** = (-N<sub>y</sub>,N<sub>x</sub>,0) si N<sub>z</sub> est minimale
+- **T1** = (N<sub>z</sub>,0,-N<sub>x</sub>) si N<sub>y</sub> est minimale
+- **T1** = (0,-N<sub>z</sub>,N<sub>y</sub>) si N<sub>x</sub> est minimale
 
-et $\( \mathbf{T2} = \mathbf{N} \times \mathbf{T1} \)$.
+et **T2** = **N**&#10799;**T1**
 
 Le calcul d'un seul rayon indirect par surface est amélioré en générant un certain nombre de rayons par pixel de l'écran, par exemple 100 rayons, qui se propagent de manière différente (de manière aléatoire), et dont on moyenne les intensités lumineuses pour obtenir l'intensité moyenne du pixel.
 

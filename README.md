@@ -184,3 +184,19 @@ g++ -o main sphere_scenes_shadow_mirror.cpp
 <div align = "center">
 <img src="img\scene_transparant.png" alt="Alt Text">
 </div>
+
+### Transmission de Fresnel
+
+Lorsqu'un rayon traverse une surface transparente, une fraction du rayon est effectivement renvoyée par la surface, conformément aux lois de Fresnel.
+
+Dans l'approche simplifiée de Schlick, le rayon incident se décompose en un rayon réfléchi $\( R \)$ et un rayon transmis $\( T \)$ selon les équations suivantes :
+
+$\[ R = k_0 + (1 - k_0)(1 - | \langle \mathbf{N}, \mathbf{i} \rangle |)^5 \]$
+
+$\[ T = 1 - R \]$
+
+où $\( k_0 = \frac{(n_1 - n_2)^2}{(n_1 + n_2)^2} \)$.
+
+<div align = "center">
+<img src="img\transparent_fresnel.png" alt="Alt Text">
+</div>

@@ -154,7 +154,7 @@ public:
         return has_inter;
     }
     std::vector<Sphere> spheres;
-    Vector position_lumiere;
+    Sphere *lumiere;
     double intensite_lumiere;
 };
 
@@ -171,6 +171,11 @@ Vector getColor(Ray &r, const Scene &s, int nbrebonds) {
 
     Vector intensite_pix(0, 0, 0);
     if (has_inter) {
+
+
+        if (sphere_id == 0){
+            return s.lumiere->albedo * s.intensite_lumiere / (4 * M_PI * s.lumiere->R*s.lumiere->R); 
+        }
 
         if (s.spheres[sphere_id].transparent) {
             double n1 = 1;
@@ -197,21 +202,22 @@ Vector getColor(Ray &r, const Scene &s, int nbrebonds) {
         }
         else {
 
-            Ray ray_light(P + 0.01 * N, (s.position_lumiere - P).getNormalized());
-            Vector P_light, N_light;
-            int sphere_id_light;
-            double t_light;
-            bool has_inter_light = s.intersection(ray_light, P_light, N_light, sphere_id_light, t_light);
-            double d_light2 = (s.position_lumiere - P).norm2();
-            if (has_inter_light && t_light * t_light < d_light2) {
-                intensite_pix = Vector(1, 1, 1);
-            }
-            else {
-                double d_light2_inv = 1 / d_light2;
-                Vector light_dir_normalized = (s.position_lumiere - P).getNormalized();
-                double light_intensity = s.intensite_lumiere * std::max(0., dot(light_dir_normalized, N)) * d_light2_inv;
-                intensite_pix = s.spheres[sphere_id].albedo * light_intensity + ambient_light; 
-            }
+            // Ray ray_light(P + 0.01 * N, (s.position_lumiere - P).getNormalized());
+            // Vector P_light, N_light;
+            // int sphere_id_light;
+            // double t_light;
+            // bool has_inter_light = s.intersection(ray_light, P_light, N_light, sphere_id_light, t_light);
+            // double d_light2 = (s.position_lumiere - P).norm2();
+            // if (has_inter_light && t_light * t_light < d_light2) {
+            //     intensite_pix = Vector(1, 1, 1);
+            // }
+            // else {
+            //     double d_light2_inv = 1 / d_light2;
+            //     Vector light_dir_normalized = (s.position_lumiere - P).getNormalized();
+            //     double light_intensity = s.intensite_lumiere * std::max(0., dot(light_dir_normalized, N)) * d_light2_inv;
+            //     intensite_pix = s.spheres[sphere_id].albedo * light_intensity + ambient_light; 
+            // }
+
             // Ecalairage indirecte
             double r1 = uniform(engine);
             double r2 = uniform(engine);
@@ -238,7 +244,8 @@ int main() {
     Vector lightBlue(0x3D / 255.0, 0xDD / 255.0, 0xD6 / 255.0);     // #3DDDD6
     Vector veryLightBlue(0xAD / 255.0, 0xDD / 255.0, 0x98 / 255.0); // #ADDD98
 
-    Sphere s0(Vector(-30, -2, -55), 10, lightBlue, false, false);      // Left sphere, light blue
+    Sphere s_lum(Vector(15, 60, -40), 15, Vector(1.,1.,1.));
+    Sphere s0(Vector(-30, -2, -55), 10, lightBlue, true, false);      // Left sphere, light blue
     Sphere s1(Vector( 20, -2, -55), 15, deepBlue, false);              // Right sphere, deep blue
     Sphere s2(Vector(0, -2000 - 20, 0), 2000, veryLightBlue);        // Floor, very light blue
     Sphere s3(Vector(0, 2000 + 100, 0), 2000, Vector(1,1,1));        // Ceiling, very light blue
@@ -247,6 +254,7 @@ int main() {
     Sphere s6(Vector(0, 0, -2000 - 100), 2000, deepBlue);            // Back wall, deep blue
 
     Scene s;
+    s.addSphere(s_lum);
     s.addSphere(s1);
     s.addSphere(s0);
     s.addSphere(s2);
@@ -254,20 +262,26 @@ int main() {
     s.addSphere(s4);
     s.addSphere(s5);
     s.addSphere(s6);
-    s.position_lumiere = Vector(15, 60, -40);
-    s.intensite_lumiere = 150000000;  // Brighter light source
+    s.lumiere = &s_lum;
+    s.intensite_lumiere = 1500000000;  // Brighter light source
 
     std::vector<unsigned char> image(W * H * 3, 0);
 #pragma omp parallel for
     for (int i = 0; i < H; i++) {
         for (int j = 0; j < W; j++) {
-            Vector direction(j - W / 2 + 0.5, -i + H / 2 - 0.5, -W / (2 * tan(fov / 2)));
-            direction.normalize();
-            Ray r(Vector(0, 0, 0), direction);
-
             Vector color(0.,0.,0.);
-            for  (int k = 0; k < nrays; ++k) 
-                color += getColor(r, s, 5) / nrays;
+            for  (int k = 0; k < nrays; ++k) {
+                    // methode de Box muller
+                    double r1 = uniform(engine);
+                    double r2 = uniform(engine);
+                    double g1 = sqrt(-2*log(r1))* cos(2*M_PI*r2);
+                    double g2 = sqrt(-2*log(r1))* sin(2*M_PI*r2);
+                    Vector direction(j - W / 2 + 0.5 + g1 , -i + H / 2 - 0.5 + g2, -W / (2 * tan(fov / 2)));
+                    direction.normalize();
+                    Ray r(Vector(0, 0, 0), direction);
+                    color += getColor(r, s, 5) / nrays;
+            }
+
 
             // Flip vertically: use i instead of (H - i - 1) to reverse the pixel order
             image[(i * W + j) * 3 + 0] = std::min(255., std::max(0., std::pow(color[0], 1 / 2.2))); // RED
@@ -280,4 +294,7 @@ int main() {
     return 0;
 }
 
-// g++ -o main sphere_scenes_shadow.cpp
+// g++ -o main ombre_douce_naive.cpp
+
+// 4 min pour un rayon 5 en un nombre de rayon egale a 100
+// 4 min pour un rayon 15 en un nombre de rayon egale a 100

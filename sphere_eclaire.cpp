@@ -15,11 +15,12 @@
 
 
 // Définit une fonction inline pour calculer le carré d'un nombre (utilisé dans la norme)
-static inline double sqr(double x) { return x * x; }
+static inline double sqr(double x) { return x * x; } //  Retourne x^2
+
 
 // Définit une classe Vector pour représenter un vecteur 3D
 class Vector {
-public:
+public: // 
     // Constructeur de la classe Vector avec des valeurs par défaut
     explicit Vector(double x = 0, double y = 0, double z = 0) {
         coord[0] = x;
@@ -41,20 +42,19 @@ public:
 
     // Calcule la norme au carré du vecteur (somme des carrés des coordonnées)
     double norm2() const {
-        return sqr(coord[0]) + sqr(coord[1]) + sqr(coord[2]);
+        return sqr(coord[0]) + sqr(coord[1]) + sqr(coord[2]); 
     }
 
     void normalize() {
-        double norm = sqrt(norm2());
-        coord[0] /= norm;
+        double norm = sqrt(norm2()); //  Calcul de la norme
+        coord[0] /= norm; //   Normalisation en utilisant la formule : V/||V||
         coord[1] /= norm;
-        coord[2] /= norm;
-
+        coord[2] /= norm; 
     }
 
-    Vector getNormalized() {
-        Vector result(*this);
-        result.normalize();
+    Vector getNormalized() { //  Version qui ne modifie pas le vecteur original
+        Vector result(*this); //    Crée une copie du vecteur original
+        result.normalize(); //    Normalise la copie et renvoie cette copie
         return result;
     }
 
@@ -82,7 +82,7 @@ double dot(const Vector& a, const Vector& b) {
 
 
 
-// class rayon qui définit O et u
+// class rayon qui définit O l'origine et u sa direction
 class Rayon {
     public:
     Rayon(const Vector& origin, const Vector& direction): O(origin), u(direction) {} ;

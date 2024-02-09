@@ -241,6 +241,8 @@ $\[ z = \sqrt{r_2} \]$
 
 et r1 et r2 sont génerés aléatoirement avec une loi Uniforme [0,1]
 
+Rappellons que le terme "surface diffuse" se réfère généralement à la manière dont la lumière interagit avec une surface pour produire une réflexion diffuse. La réflexion diffuse se produit lorsque la lumière frappe une surface et se disperse dans différentes directions. Cela contraste avec la réflexion spéculaire, où la lumière se reflète sur une surface à un angle spécifique.
+
 <div align = "center">
 <img src="img\Eclairage_indirect_ill.png" alt="Alt Text">
 </div>
@@ -254,3 +256,80 @@ et r1 et r2 sont génerés aléatoirement avec une loi Uniforme [0,1]
 </div>
 
 
+### Correction de la surface de la sphére par la méthode de Box muller
+
+On génère deux nombres aléatoires u1 et u2 suivant une loi uniforme sur [0,1] puis on calcule deux nombres aléatoires :
+
+x1 = σ . cos(2 π u1) . √(-2 log(u2))
+
+x2 = σ . sin(2 π u1) . √(-2 log(u2))
+
+x1 et x2 suivent alors une loi Gaussienne d'écart-type σ.
+
+
+Le code est valable:
+```
+g++ -o main Anti-aliasing.cpp
+```
+Le résultat du code ci-dessous:
+
+<div align="center">
+  <img src="img/Without-anti-aliasing.png" alt="Without Anti-Aliasing">
+  <img src="img/with-anti-aliasing.png" alt="With Anti-Aliasing">
+</div>
+
+## Ombre douce
+
+
+Jusqu'à présent, nous avons utilisé une source de lumière ponctuelle émettant dans toutes les directions de l'espace pour éclairer la scène, ce qui a généré des ombres nettes. Afin d'atténuer ces ombres, nous proposons de remplacer la source ponctuelle par une surface émissive, telle qu'une sphère, qui se rapproche davantage d'une ampoule.
+
+Cette modification n'affecte pas l'éclairage indirect, mais la manière de calculer l'éclairage indirect est différente.
+
+### Approche naive
+
+Dans une première approche dite naïve, nous éliminons la source ponctuelle et prenons uniquement en compte les réflexions sur une surface émissive (sphère blanche) avec une intensité lumineuse de :
+
+I / 4 π^2R^2
+
+Le résultat de cette approche naïve est présenté ci-dessous. On remarque un bruit, cela est du au fait que la sphére limileuse lorsque elle a un rayon petit, on a moins de probabilité que les rayons peuvent l'inteindre.
+
+<div align="center">
+  <img src="img\Ombre_douce_naive.png" alt="Without Anti-Aliasing">
+</div>
+
+Par contre, on augmentant le rayons de la sphére limuneuse, on arrive à avoir moins de bruit dans l'image.
+
+<div align="center">
+  <img src="img\ombre_douce_naive_r5_nr100.png" alt="Without Anti-Aliasing">
+  <img src="img\ombre_douce_naive_r15_nr100.png" alt="Without Anti-Aliasing">
+</div>
+
+
+### Approche intégrale
+Alors qu'auparavant, il suffisait de diriger un rayon vers une source ponctuelle pour calculer l'éclairage direct dans le modèle précédent, la méthode actuelle implique d'intégrer sur la demi-sphère de la surface émissive qui "perçoit" la surface éclairée.
+
+Cette intégration sur la demi-sphère est réalisée en subdivisant la surface en éléments de manière aléatoire à l'aide d'une loi de Monte Carlo.
+
+L'équation de rendu est ensuite reformulée en effectuant un changement de variable, où l'intégration porte sur les éléments d'air de la scène avec la quantité suivante :
+
+$\[ \int f(w_i(x'), w_o) \cdot L(w_i(x')) \cdot \cos(\theta_i) \cdot J(x') \cdot dx' \]$
+
+où $\( J \)$ est le jacobien défini comme suit :
+
+$\[ J(x) = \cos(\theta') \cdot \frac{V(x, x')}{||x - x'||^2} \]$
+
+et $\( V \)$ est le facteur de visibilité (qui vaut 0 ou 1 en fonction de la visibilité de $\( x' \)$ depuis $\( x \)$), et $\( \cos(\theta') = \langle N', w_i(x') \rangle \)$.
+
+Afin d'améliorer la précision du calcul de l'intégrale, un échantillonnage des points de la surface est effectué. Grâce à la méthode de Monte Carlo, des points sont choisis aléatoirement selon une loi gaussienne sur la demi-sphère centrée sur $\( L \)$, de rayon $\( R \)$ et dirigée vers $\( x \)$.
+
+L'intensité lumineuse résultante du point généré aléatoirement $\( x' \)$ peut alors être exprimée comme suit :
+
+$\[ I_{x'} = \frac{I_{\text{lum}}}{4 \pi^2 R^2} \cdot \frac{\rho}{\pi} \cdot \langle N, w_i(x') \rangle \cdot J \cdot \frac{1}{p(x')} \]$
+
+où $\( p(x') = \frac{\langle L_x, L_{x'} \rangle}{\pi R^2} \)$. Les figures ci-dessous présentent les résultats obtenus grâce à cette approche.
+
+voici le résultat: 
+
+<div align="center">
+  <img src="img\ombre_douce_integrale.png" alt="Without Anti-Aliasing">
+</div>

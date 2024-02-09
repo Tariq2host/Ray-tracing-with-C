@@ -261,13 +261,19 @@ int main() {
 #pragma omp parallel for
     for (int i = 0; i < H; i++) {
         for (int j = 0; j < W; j++) {
-            Vector direction(j - W / 2 + 0.5, -i + H / 2 - 0.5, -W / (2 * tan(fov / 2)));
-            direction.normalize();
-            Ray r(Vector(0, 0, 0), direction);
-
             Vector color(0.,0.,0.);
-            for  (int k = 0; k < nrays; ++k) 
-                color += getColor(r, s, 5) / nrays;
+            for  (int k = 0; k < nrays; ++k) {
+                    // methode de Box muller
+                    double r1 = uniform(engine);
+                    double r2 = uniform(engine);
+                    double g1 = sqrt(-2*log(r1))* cos(2*M_PI*r2);
+                    double g2 = sqrt(-2*log(r1))* sin(2*M_PI*r2);
+                    Vector direction(j - W / 2 + 0.5 + g1 , -i + H / 2 - 0.5 + g2, -W / (2 * tan(fov / 2)));
+                    direction.normalize();
+                    Ray r(Vector(0, 0, 0), direction);
+                    color += getColor(r, s, 5) / nrays;
+            }
+
 
             // Flip vertically: use i instead of (H - i - 1) to reverse the pixel order
             image[(i * W + j) * 3 + 0] = std::min(255., std::max(0., std::pow(color[0], 1 / 2.2))); // RED
@@ -280,4 +286,4 @@ int main() {
     return 0;
 }
 
-// g++ -o main sphere_scenes_shadow.cpp
+// g++ -o main Anti-aliasing.cpp

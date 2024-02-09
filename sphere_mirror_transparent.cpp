@@ -9,6 +9,8 @@
 
 #define M_PI 3.1415926535897932
 
+
+
 static inline double sqr(double x) { return x * x; }
 
 class Vector {
@@ -187,6 +189,8 @@ Vector getColor(const Ray &r, Scene &s, int nprebonds){
                         } else {
                             intensite_pix = s.spheres[sphere_id].albedo * (s.intensite_lumiere * std::max(0.,dot((s.position_lumiere-P).getNormalized(),N)) / (s.position_lumiere - P).norm2());
                         }
+
+                    
 
                     }
             }

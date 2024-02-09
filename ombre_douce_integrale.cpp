@@ -259,11 +259,12 @@ Vector getColor(Ray &r, const Scene &s, int nbrebonds) {
     return intensite_pix;
 }
 
+#pragma omp parallel for
 int main() {
     int W = 512;
     int H = 512;
     double fov = 60 * M_PI / 100;
-    int nrays = 100;
+    int nrays = 120;
 
     Vector deepBlue(0x12 / 255.0, 0x54 / 255.0, 0x88 / 255.0);     // #125488
     Vector lightBlue(0x3D / 255.0, 0xDD / 255.0, 0xD6 / 255.0);     // #3DDDD6

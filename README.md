@@ -332,4 +332,5 @@ voici le résultat:
 
 <div align="center">
   <img src="img\ombre_douce_integrale.png" alt="Without Anti-Aliasing">
+  <img src="img\ombre_douce_miroire.png" alt="Without Anti-Aliasing">
 </div>

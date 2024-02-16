@@ -235,7 +235,7 @@ Vector getColor(Ray &r, const Scene &s, int nbrebonds) {
             Vector wi = (point_aleatoire - P).getNormalized();
             double d_light2 = (point_aleatoire - P).norm2();
             Vector Np = dir_aleatoire;
-            Ray ray_light(P + 0.01 * N, wi);
+            Ray ray_light(P + 0.001 * N, wi);
             Vector P_light, N_light;
             int sphere_id_light;
             double t_light;
@@ -259,18 +259,18 @@ Vector getColor(Ray &r, const Scene &s, int nbrebonds) {
     return intensite_pix;
 }
 
-#pragma omp parallel for
+
 int main() {
     int W = 512;
     int H = 512;
     double fov = 60 * M_PI / 100;
-    int nrays = 120;
+    int nrays = 128;
 
     Vector deepBlue(0x12 / 255.0, 0x54 / 255.0, 0x88 / 255.0);     // #125488
     Vector lightBlue(0x3D / 255.0, 0xDD / 255.0, 0xD6 / 255.0);     // #3DDDD6
     Vector veryLightBlue(0xAD / 255.0, 0xDD / 255.0, 0x98 / 255.0); // #ADDD98
 
-    Sphere s_lum(Vector(15, 60, -40), 18, Vector(1.,1.,1.));
+    Sphere s_lum(Vector(15, 60, -40), 20, Vector(1.,1.,1.));
     Sphere s0(Vector(-30, -2, -55), 10, lightBlue, false, false);      // Left sphere, light blue
     Sphere s1(Vector( 20, -2, -55), 15, deepBlue, true);              // Right sphere, deep blue
     Sphere s2(Vector(0, -2000 - 20, 0), 2000, veryLightBlue);        // Floor, very light blue
@@ -289,7 +289,7 @@ int main() {
     s.addSphere(s5);
     s.addSphere(s6);
     s.lumiere = &s_lum;
-    s.intensite_lumiere = 1500000000;  // Brighter light source
+    s.intensite_lumiere = 2000000000;  // Brighter light source
 
     std::vector<unsigned char> image(W * H * 3, 0);
 #pragma omp parallel for
@@ -321,3 +321,4 @@ int main() {
 }
 
 // g++ -o main ombre_douce_integrale.cpp
+// g++ -o main -fopenmp ombre_douce_integrale.cpp

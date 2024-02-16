@@ -86,6 +86,18 @@ Vector cross(const Vector&a, const Vector&b){
     return Vector(a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[1]*b[1]-a[1]*b[0]);
 }
 
+Vector random_cos(const Vector &N)
+{            
+    double r1 = uniform(engine);
+    double r2 = uniform(engine);
+    Vector direction_aleatoire_local(cos(2*M_PI*r1)*sqrt(1-r2), sin(2*M_PI*r1)*sqrt(1-r2), sqrt(r2)) ;
+    Vector aleatoire(uniform(engine)-0.5, uniform(engine)-0.5, uniform(engine)-0.5);
+    Vector tangent1 = cross(N, aleatoire);tangent1.normalize();
+    Vector tangent2 = cross(tangent1, N);
+    return direction_aleatoire_local[2]*N + direction_aleatoire_local[0]*tangent1 + direction_aleatoire_local[1] * tangent2;
+}
+
+
 double dot(const Vector& a, const Vector& b) {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
@@ -217,15 +229,28 @@ Vector getColor(Ray &r, const Scene &s, int nbrebonds) {
             //     double light_intensity = s.intensite_lumiere * std::max(0., dot(light_dir_normalized, N)) * d_light2_inv;
             //     intensite_pix = s.spheres[sphere_id].albedo * light_intensity + ambient_light; 
             // }
+            Vector axePO = (P-s.lumiere->O).getNormalized();
+            Vector dir_aleatoire = random_cos(P-s.lumiere->O).getNormalized();
+            Vector point_aleatoire = dir_aleatoire * s.lumiere->R + s.lumiere->O ;
+            Vector wi = (point_aleatoire - P).getNormalized();
+            double d_light2 = (point_aleatoire - P).norm2();
+            Vector Np = dir_aleatoire;
+            Ray ray_light(P + 0.001 * N, wi);
+            Vector P_light, N_light;
+            int sphere_id_light;
+            double t_light;
+            bool has_inter_light = s.intersection(ray_light, P_light, N_light, sphere_id_light, t_light);
+            if (has_inter_light && t_light * t_light < d_light2*0.99) {
+                intensite_pix = Vector(0, 0, 0);
+            }
+            else{
+            intensite_pix = (s.intensite_lumiere / (4*M_PI*d_light2) * std::max(0.,dot(wi, N))*dot(Np, -wi)/ dot(axePO,dir_aleatoire))*s.spheres[sphere_id].albedo;
+            }
+
 
             // Ecalairage indirecte
-            double r1 = uniform(engine);
-            double r2 = uniform(engine);
-            Vector direction_aleatoire_local(cos(2*M_PI*r1)*sqrt(1-r2), sin(2*M_PI*r1)*sqrt(1-r2), sqrt(r2)) ;
-            Vector aleatoire(uniform(engine)-0.5, uniform(engine)-0.5, uniform(engine)-0.5);
-            Vector tangent1 = cross(N, aleatoire);tangent1.normalize();
-            Vector tangent2 = cross(tangent1, N);
-            Vector direction_aleatoire = direction_aleatoire_local[2]*N + direction_aleatoire_local[0]*tangent1 + direction_aleatoire_local[1] * tangent2;
+
+            Vector direction_aleatoire = random_cos(N);
             Ray rayon_aleatoire (P+0.001*N, direction_aleatoire);
             intensite_pix += getColor(rayon_aleatoire, s, nbrebonds - 1) * s.spheres[sphere_id].albedo;
                        
@@ -234,24 +259,28 @@ Vector getColor(Ray &r, const Scene &s, int nbrebonds) {
     return intensite_pix;
 }
 
+
 int main() {
     int W = 512;
     int H = 512;
     double fov = 60 * M_PI / 100;
-    int nrays = 100;
+    int nrays = 128;
+    Vector position_camera = Vector(0, 0, 0);
+    double focus_distance = 55;
 
     Vector deepBlue(0x12 / 255.0, 0x54 / 255.0, 0x88 / 255.0);     // #125488
     Vector lightBlue(0x3D / 255.0, 0xDD / 255.0, 0xD6 / 255.0);     // #3DDDD6
     Vector veryLightBlue(0xAD / 255.0, 0xDD / 255.0, 0x98 / 255.0); // #ADDD98
 
-    Sphere s_lum(Vector(15, 60, -40), 15, Vector(1.,1.,1.));
-    Sphere s0(Vector(-30, -2, -55), 10, lightBlue, true, false);      // Left sphere, light blue
-    Sphere s1(Vector( 20, -2, -55), 15, deepBlue, false);              // Right sphere, deep blue
-    Sphere s2(Vector(0, -2000 - 20, 0), 2000, veryLightBlue);        // Floor, very light blue
-    Sphere s3(Vector(0, 2000 + 100, 0), 2000, Vector(1,1,1));        // Ceiling, very light blue
-    Sphere s4(Vector(-2000 - 50, 0, 0), 2000, lightBlue);            // Left wall, light blue
-    Sphere s5(Vector(2000 + 50, 0, 0), 2000, lightBlue);             // Right wall, light blue
-    Sphere s6(Vector(0, 0, -2000 - 100), 2000, deepBlue);            // Back wall, deep blue
+    Sphere s_lum(Vector(15, 60, -40), 20, Vector(1.,1.,1.));
+    Sphere s0(Vector(-30, -2, -55), 15, Vector(1,0,0), true);  // Sphère à gauche
+    Sphere s1(Vector( 20, -2, -55), 20, Vector(1,0,0), true);  // Sphère à droite
+    Sphere s2(Vector(0, -2000-20, 0), 2000, Vector(1,1,1)); //sol
+    Sphere s3(Vector(0, 2000+100, 0), 2000, Vector(1,1,1)); // plafond
+    Sphere s4(Vector(-2000-50,0, 0), 2000, Vector(0,1,0)); // mur gauche
+    Sphere s5(Vector(2000+50,0, 0), 2000, Vector(0,0,1)); // mur droit
+    Sphere s6(Vector(0,0, -2000-100), 2000, Vector(0,1,1)); // mur fond
+    Sphere s7(Vector(0,0, 2000+100), 2000, Vector(1,1,0)); // mur arrière caméra
 
     Scene s;
     s.addSphere(s_lum);
@@ -262,8 +291,9 @@ int main() {
     s.addSphere(s4);
     s.addSphere(s5);
     s.addSphere(s6);
+    s.addSphere(s7);
     s.lumiere = &s_lum;
-    s.intensite_lumiere = 1500000000;  // Brighter light source
+    s.intensite_lumiere = 2000000000;  // Brighter light source
 
     std::vector<unsigned char> image(W * H * 3, 0);
 #pragma omp parallel for
@@ -276,9 +306,14 @@ int main() {
                     double r2 = uniform(engine);
                     double g1 = sqrt(-2*log(r1))* cos(2*M_PI*r2);
                     double g2 = sqrt(-2*log(r1))* sin(2*M_PI*r2);
+                    double dx_aperture = (uniform(engine)-0.5)*5.;
+                    double dy_aperture = (uniform(engine)-0.5)*5.;
                     Vector direction(j - W / 2 + 0.5 + g1 , -i + H / 2 - 0.5 + g2, -W / (2 * tan(fov / 2)));
                     direction.normalize();
-                    Ray r(Vector(0, 0, 0), direction);
+
+                    Vector destination = position_camera + focus_distance * direction;
+                    Vector new_origin = position_camera +   Vector(dx_aperture, dy_aperture,0);
+                    Ray r(new_origin,(destination-new_origin).getNormalized());
                     color += getColor(r, s, 5) / nrays;
             }
 
@@ -294,7 +329,5 @@ int main() {
     return 0;
 }
 
-// g++ -o main ombre_douce_naive.cpp
-
-// 4 min pour un rayon 5 en un nombre de rayon egale a 100
-// 4 min pour un rayon 15 en un nombre de rayon egale a 100
+// g++ -o main depht_of_field.cpp
+// g++ -o main -fopenmp depht_of_field.cpp

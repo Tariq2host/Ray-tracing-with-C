@@ -328,9 +328,23 @@ $\[ I_{x'} = \frac{I_{\text{lum}}}{4 \pi^2 R^2} \cdot \frac{\rho}{\pi} \cdot \la
 
 où $\( p(x') = \frac{\langle L_x, L_{x'} \rangle}{\pi R^2} \)$. Les figures ci-dessous présentent les résultats obtenus grâce à cette approche.
 
-voici le résultat: 
-
+voici le résultat sans ombre douce sans méthode intégrale: 
+<div align="center">
+  <img src="img/with-anti-aliasing.png" alt="With Anti-Aliasing">
+</div>
+et le résultats avec ombre douce méthode intégrale:
 <div align="center">
   <img src="img\ombre_douce_integrale.png" alt="Without Anti-Aliasing">
   <img src="img\ombre_douce_miroire.png" alt="Without Anti-Aliasing">
+  <img src="img\ombre_douce_integral_miroire_transparent.png"\ alt="Without Anti-Aliasing">
 </div>
+
+## Depht_of_field
+À l'origine, la caméra utilisée était équipée d'un obturateur fonctionnant de manière ponctuelle. À présent, nous modélisons la caméra avec un obturateur d'ouverture non ponctuelle. La position du point C, représentant la caméra, est désormais une variable aléatoire Gaussienne centrée autour de C.
+
+Avec ce nouveau dispositif, la netteté des objets varie en fonction de leur distance, ce qui dépend de la profondeur de champ. Les objets dont l'image est capturée par le capteur apparaîtront nets, tandis que les autres seront plus flous en raison de la zone de confusion causée par l'obturateur.
+
+<div align="center">
+  <img src="img/depht_of_field.png" alt="With Anti-Aliasing">
+</div>
+

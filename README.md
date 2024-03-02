@@ -11,17 +11,62 @@ L'approche est la suivante : des demi-droites sont tracées à partir du centre 
 
 u = ( j-W/2, i-H/2, -W/(2.tan(α/2)))
 
+demo: voir figure 1
+
 où (i, j) sont les coordonnées du pixel sur l'écran de la caméra.
+
+![Alt text](img/raytracing_ill.png)
+
+![Alt text](img/sphere_pix-1.png)
 
 Pour chaque demi-droite, l'intersection avec la sphère est calculée. On résout l'équation suivante :
 
 t<sup>2</sup> + 2.t.<u,CO> + ||CO||<sup>2</sup> - R<sup>2</sup> = 0
 
-Si l'intersection existe (au moins une solution t positive), le pixel correspondant est représenté en blanc ; sinon, il reste noir.
+demo: 
 
-![Alt text](img/raytracing_ill.png)
+Pour démontrer l'équation $\(t^2 + 2t \langle u, CO \rangle + \|CO\|^2 - R^2 = 0\)$, nous allons utiliser l'équation d'une sphère et l'équation d'une demi-droite dans l'espace.
 
-![Alt text](img/sphere_pix-1.png)
+1. **Équation de la demi-droite** : Une demi-droite partant de C et dirigée par le vecteur unitaire u peut être représentée par $\(P = C + tu\)$, où $\(P\)$ est un point quelconque sur la demi-droite, $\(C\)$ est le point de départ (le centre de la caméra), $\(u\)$ est le vecteur direction de la demi-droite, et $\(t\)$ est un paramètre scalaire.
+
+2. **Équation de la sphère** : L'équation d'une sphère de centre $\(O\)$ et de rayon $\(R\)$ est $\(\|X - O\|^2 = R^2\)$, où $\(X\)$ est un point quelconque sur la sphère.
+
+Pour trouver les points d'intersection, nous substituons \(P\) de l'équation de la demi-droite dans l'équation de la sphère.
+
+3. **Substitution** : Remplaçons $\(X\)$ par $\(P = C + tu\)$ dans l'équation de la sphère :
+
+$\[
+\|C + tu - O\|^2 = R^2
+\]$
+
+Développons cette équation :
+
+$\[
+\|tu + (C - O)\|^2 = R^2
+\]$
+
+$\[
+\|(tu + CO)\|^2 = R^2
+\]$
+
+où $\(CO = C - O\)$.
+
+En développant le carré du vecteur, nous obtenons :
+
+$\[
+(tu + CO) \cdot (tu + CO) = R^2
+\]$
+
+$\[
+t^2(u \cdot u) + 2t(u \cdot CO) + CO \cdot CO = R^2
+\]$
+
+Puisque $\(u\)$ est un vecteur unitaire, $\(u \cdot u = 1\)$, l'équation devient :
+
+$\[
+t^2 + 2t(u \cdot CO) + \|CO\|^2 = R^2
+\]$
+
 
 
 ### Classes Implémentées :
@@ -63,6 +108,54 @@ L'implémentation de cette partie est donnée dans le fichier `sphere_eclaire.cp
 g++ -o main sphere_eclaire.cpp
 ```
 
+```C++
+class Rayon {
+    public:
+    Rayon(const Vector& origin, const Vector& direction): origin(origin), direction(direction) {} ;
+    Vector origin, direction;
+};
+
+// on définit une classe lumiére qui representra notre source de lumiére dans l'image
+class lumiere {
+    public:
+    lumiere(const Vector& position, const double intensite): position(position), intensite(intensite) {} ;
+    Vector position;
+    double intensite;
+};
+
+
+// class sphere de centre et de rayon avec la fonction intersect qui vérifie si la droite intersect la sphére
+class sphere {
+    public :
+    sphere(const Vector& centre, double rayon, Vector couleur) : centre(centre), rayon(rayon), albedo(couleur) {};
+    Vector centre; 
+    double rayon;
+    Vector albedo; // facteur qui represente à chaque elle reflete une couleur 
+    // Retourne vrai si une intersection est trouvée, avec le point d'intersection P et la normale N en ce point.
+    bool intersect(const Rayon& r, Vector& P, Vector &N) { 
+        // on cherche la position (le plus proche) de l'intersection avec la sphere (c'est le P)
+        // et la normale par rapport à la sphere sur cette position p (c'est N)
+        // resout a*t*2 + b*t +c =c0
+        // t^2 + 2.t.<u,CO> + ||CO||^2 - R^2 = 0
+        double a = 1; 
+        double b = 2 * dot(r.direction, r.origin-centre);  
+        double c = (r.origin-centre).norm2() - sqr(rayon);
+        double delta = sqr(b) - 4 * a * c; 
+        if (delta < 0) return false; // Pas d'intersection
+        double sqrtdelta = sqrt(delta);
+        double t1 = (-b - sqrtdelta) / (2 * a);
+        double t2 = (-b + sqrtdelta) / (2 * a);
+        if (t2 < 0) return false;
+        // utilise le t le plus petit positif pour déterminer le point d'intersection le plus proche.
+        double t = (t1 > 0) ? t1 : t2;
+        P = r.origin + t*r.direction; // point d'intersection
+        N = (P-centre).getNormalized(); 
+        return true; // normale à la sphère au point d'intersection
+    }
+};
+
+```
+
 ## Notre première scene
 
 Nous souhaitons désormais rendre la scène observée plus complexe. Jusqu'à présent, seule une sphère était positionnée devant la caméra.
@@ -88,6 +181,41 @@ g++ -o main sphere_scenes.cpp
 <img src="img\scene_ill.png" alt="Alt Text">
 </div>
 
+```C++
+
+class scene {
+    public:
+    scene(){};
+    std::vector<sphere> spheres;
+    void addSphere(const sphere& s) {
+        spheres.push_back(s); 
+    }
+    bool intersection(const Rayon& ray, Vector& P, Vector& N, int& sphere_id, double& min_t) {
+        bool has_inter = false; // To keep track if any intersection has been found
+        min_t = 1E99; // Initialize min_t
+
+        // Iterate over all spheres in the scene.
+        for (int i = 0; i < spheres.size(); ++i) {
+            Vector localP, localN; // Variables to store the local intersection point and normal
+            double t; 
+            // Test if the current sphere intersects with the ray.
+            bool local_has_inter = spheres[i].intersect(ray, localP, localN, t);
+            // If there is an intersection and it is closer than any previous one, update the parameters.
+            if (local_has_inter && t < min_t) {
+                has_inter = true;
+                min_t = t;
+                P = localP;
+                N = localN;
+                sphere_id = i;
+            }
+        }
+
+        // Return whether any intersection was found.
+        return has_inter;
+    }
+};
+
+```
 
 <div align = "center">
 <img src="img\sphere_scenes.png" alt="Alt Text">
@@ -111,6 +239,7 @@ avec $\(\gamma = 2,2\) et \(1/\gamma = 0,45\)$.
 
 Cette opération permet de ajuster l'intensité lumineuse, améliorant ainsi le contraste des objets dans la scène. Le paramètre \(\gamma\) joue un rôle crucial dans cette correction, et les valeurs spécifiées (2,2 et 0,45) sont couramment utilisées pour obtenir des résultats visuellement satisfaisants.
 
+
 ### Amélioration avec les Ombres Portées :
 
 Nous cherchons à améliorer davantage le rendu en ajoutant les **ombres portées**, c'est-à-dire les ombres des objets projetées sur les surfaces.
@@ -118,6 +247,52 @@ Nous cherchons à améliorer davantage le rendu en ajoutant les **ombres portée
 La stratégie adoptée est la suivante : des rayons sont émis dans toutes les directions (vers chaque pixel de l'écran). Pour chaque rayon, on détermine son intersection avec un objet de la scène, puis on vérifie si le rayon entre cette intersection et la source de lumière coupe un autre objet. Si tel est le cas, le pixel d'intersection est rendu plus sombre.
 
 L'implémentation de cette partie est donnée dans le fichier `sphere_scenes_shadow.cpp`, pour l'exécuter il suffit d'exécuter cette commande dans un terminale: 
+
+
+```C++
+    for (int i = 0; i < H; i++) {
+        for (int j = 0; j < W; j++) {
+
+            // Crée un vecteur pour le pixel actuel
+            Vector u(j - W / 2 + 0.5, -i + H / 2 + 0.5, -W / (2 * tan(fov / 2)));
+
+            u.normalize();
+            // Crée un rayon depuis le centre de la caméra vers ce pixel
+            Rayon r(Vector(0, 0, 0), u);
+            Vector P, N;
+            double t;
+            int sphere_id;
+            bool has_inter = s.intersection(r, P, N, sphere_id, t);
+
+            Vector intensite_pix(0,0,0);
+            if (has_inter){
+                // ombre porté
+                Rayon rayon_sec(P + 0.001*N, (position_lumiere-P).getNormalized()); // on envoie un rayon du point d'intersection vers la lumiere
+                Vector P_sec, N_sec; 
+                int sphere_id_sec;
+                double t_sec;
+                bool has_inter_sec = s.intersection(rayon_sec,P_sec,N_sec,sphere_id_sec, t_sec); // on recupere l'intersection
+                double distance_sec = (position_lumiere - P).norm2();
+                if (has_inter_sec && distance_sec > t_sec*t_sec){
+                    intensite_pix = Vector(0,0,0);
+                } 
+                else {
+                intensite_pix = s.spheres[sphere_id].albedo * (intensite * std::max(0.,dot((position_lumiere - P).getNormalized(), N)) / ((l.position - P).norm2()*4*sqr(M_PI)));
+                }
+            }
+            // Attribution de la couleur au pixel en fonction de l'intersection avec la sphère
+            image[(i * W + j) * 3 + 0] = std::min(255., std::max(0.,std::pow(intensite_pix[0], 1/2.2)));  // Composante RED
+            image[(i * W + j) * 3 + 1] = std::min(255., std::max(0.,std::pow(intensite_pix[1], 1/2.2)));   // Composante GREEN
+            image[(i * W + j) * 3 + 2] = std::min(255., std::max(0.,std::pow(intensite_pix[2], 1/2.2)));  // Composante BLUE
+
+            if (j == 0) {
+                double progress = (100.0 * i) / H;
+                std::cout << "Progress: " << progress << "%\r";
+                std::cout.flush(); // S'assure que la sortie est affichée immédiatement
+            }
+        }
+    }
+```
 
 ```
 g++ -o main sphere_scenes_shadow.cpp
@@ -145,6 +320,16 @@ $\[ r = i - 2\langle i, \mathbf{N} \rangle \mathbf{N} \]$
 
 Cette formulation reflète le rayon par rapport à la normale de la surface. Cette fonction de réflexion permet de simuler le comportement des surfaces miroir dans la scène, ajoutant ainsi des éléments de réalisme et de complexité visuelle au rendu final du raytracer.
 L'implémentation de cette partie est donnée dans le fichier `sphere_scenes_shadow_mirror.cpp`, pour l'exécuter il suffit d'exécuter cette commande dans un terminale: 
+
+
+```C++
+ if (s.spheres[sphere_id].miroir){
+                    // calcul recursive du rayon réfléchie jusqu'a que le nbr de rebond soit 0
+                    Vector direction_mir = r.direction - 2*dot(N,r.direction)*N;
+                    Rayon rayon_miroir (P+0.001*N, direction_mir);
+                    intensite_pix = getColor(rayon_miroir, s, nbrebonds - 1);
+                    } 
+```
 
 ```
 g++ -o main sphere_scenes_shadow_mirror.cpp
@@ -177,6 +362,28 @@ Cette approche permet de simuler le comportement des surfaces transparentes, ajo
 
 L'implémentation de cette partie est donnée dans le fichier `sphere_mirror_transparent.cpp`, pour l'exécuter il suffit d'exécuter cette commande dans un terminale: 
 
+```C++
+                else if (s.spheres[sphere_id].transp){
+                    // calcul de la tarnsparence
+                    double n1 = 1.0;
+                    double n2 = 1.3;
+                    Vector N_refract(N);
+                    double cosi = dot(r.direction, N);
+                    double ti = 1-sqr(n1/n2)*(1-sqr(cosi));
+                    // check direction du rayon par rapport à la normale de la sphere
+                    if (cosi > 0){
+                        std::swap(n1, n2);
+                        N_refract = - N;
+                    }
+                    if (ti > 0){
+                        Vector T_normal = - sqrt(ti) * N_refract;
+                        Vector T_tangent = n1/n2 * (r.direction - cosi*N_refract);
+                        Vector T_transmis = T_normal + T_tangent; 
+                        Rayon rayon_transp (P-0.01*N_refract, T_transmis);
+                        intensite_pix = getColor(rayon_transp, s, nbrebonds - 1);
+                    } 
+                }
+```
 ```
 g++ -o main sphere_scenes_shadow_mirror.cpp
 ```
@@ -220,6 +427,35 @@ où $f$ est la BRDF (Bidirectional Reflectance Distribution Function) telle que 
 - $\( \int f(\mathbf{wi}, \mathbf{wo}) \cdot \cos(\mathbf{wi}) \, d\mathbf{wi} \leq 1 \)$ pour tout $\(\mathbf{wo}\)$ (conservation de l'énergie).
 
 Cependant, cette intégrale peut être difficile voire impossible à évaluer de manière analytique en raison de sa complexité. Dans la pratique, plusieurs techniques numériques, telles que la méthode de Monte Carlo, sont utilisées pour approximer cette intégrale.
+
+## Méthode de Monte Carlo pour l'intégration
+
+L'intégration de Monte Carlo est une technique utilisée pour estimer la valeur d'une intégrale en utilisant des méthodes statistiques et probabilistes. Cette méthode est particulièrement utile pour les intégrales complexes ou de haute dimension où les méthodes d'intégration traditionnelles sont difficiles à appliquer.
+
+Le concept de base repose sur l'interprétation de l'intégrale comme une espérance mathématique. Considérons une fonction $\(f(x)\)$ que nous voulons intégrer sur un intervalle $\([a, b]\)$. L'intégrale peut être vue comme l'espérance d'une variable aléatoire $\(f(X)\)$, où $\(X\)$ est une variable aléatoire uniformément distribuée sur $\([a, b]\)$.
+Le concept de base repose sur l'interprétation de l'intégrale comme une espérance mathématique. Considérons une fonction $\(f(x)\)$ que nous voulons intégrer sur un intervalle $\([a, b]\)$. L'intégrale peut être vue comme l'espérance d'une variable aléatoire $\(f(X)\)$, où \(X\) est une variable aléatoire uniformément distribuée sur \([a, b]\).
+
+### Formule de base
+
+L'intégrale de $\(f(x)\)$ sur $\([a, b]\)$ est donnée par :
+
+$\[
+\int_a^b f(x) dx = (b - a) \mathbb{E}[f(X)]
+\]$
+
+où $\(\mathbb{E}[f(X)]\)$ est l'espérance de $\(f(X)\)$.
+
+### Estimation par Monte Carlo
+
+Pour estimer cette intégrale par Monte Carlo, on suit les étapes suivantes :
+
+1. Générer $\(N\)$ échantillons $\(x_1, x_2, \ldots, x_N\)$ de la variable aléatoire $\(X\)$ qui suit une distribution uniforme sur $\([a, b]\)$.
+2. Calculer la valeur de $\(f(x)\)$ pour chaque échantillon pour obtenir $\(f(x_1), f(x_2), \ldots, f(x_N)\)$.
+3. Estimer l'espérance de $\(f(X)\)$ par la moyenne des valeurs calculées : $\(\mathbb{E}[f(X)] \approx \frac{1}{N} \sum_{i=1}^N f(x_i)\)$.
+4. L'estimation de l'intégrale est alors : $\(\int_a^b f(x) dx \approx (b - a) \frac{1}{N} \sum_{i=1}^N f(x_i)\)$.
+
+
+La force de l'intégration de Monte Carlo réside dans sa simplicité et sa capacité à gérer des intégrales de haute dimension sans devenir significativement plus complexe, bien que le taux de convergence soit relativement lent (en $\(O(N^{-1/2})\)$).
 
 La méthode de Monte Carlo implique l'échantillonnage aléatoire de directions de lumière incidente wi selon une distribution probabiliste, puis la moyenne des contributions lumineuses calculées pour chaque échantillon.
 
@@ -347,4 +583,70 @@ Avec ce nouveau dispositif, la netteté des objets varie en fonction de leur dis
 <div align="center">
   <img src="img/depht_of_field.png" alt="With Anti-Aliasing">
 </div>
+
+<div align="center">
+  <img src="img\depth_od_field2.png" alt="With Anti-Aliasing">
+</div>
+
+# D'un triangle à un Maillage
+
+Jusqu'à maintenant, les éléments affichés dans la scène se limitaient à des sphères avec des centres et des rayons spécifiés. Pour incorporer une variété d'objets tels que des rectangles, des cylindres, ou même des formes plus élaborées, comme un chien, il est nécessaire de mettre en place le concept de maillage de surface.
+
+Le maillage d'une surface consiste à découper cette surface en triangle.
+
+Le fichier téléchargé porte l'extension .obj, il contient :
+
+- les sommets des triangles v
+- les normales aux sommets vn
+- les coordonnées de texture vt
+- les faces f.
+
+## Approche Naïve
+
+La première technique implique de vérifier, pour chaque rayon dans la scène, tous les triangles du maillage afin de déterminer le triangle intersecté le plus proche, s'il y en a un.
+
+Cette approche entraîne une augmentation significative du temps de calcul en raison du grand nombre de triangles à examiner (par exemple, 30 000 pour le maillage représentant un chien).
+
+L'intersection d'une maille (un triangle) avec un rayon est calculée en utilisant l'algorithme de Möller-Trumbore.
+
+Tous les points P du triangle ABC peuvent être exprimés à l'aide des coordonnées barycentriques α, β, et γ (α, β, γ ≥ 0) de manière à ce que :
+
+P = αA + βB + γC, avec la condition que : α + β + γ = 1
+
+Ou encore :
+
+P = A + βe1 + γe2
+
+avec e1 et e2 étant les vecteurs dirigés respectivement de A vers B et de A vers C,
+
+et P = O + tu,
+
+ce qui donne : βe1 + γe2 - tu = O - A,
+
+ou, de façon équivalente :
+
+[e1 e2 -u].[β γ t] = OA.
+
+Cette équation peut être résolue en utilisant la méthode de Cramer, ce qui mène aux solutions suivantes :
+
+β = - <e2, OA ⨯ u> / <u, N>
+
+γ = - <e1, OA ⨯ u> / <u, N>
+
+t = - <OA, N> / <u, N>, où < , > dénote le produit scalaire et ⨯ le produit vectoriel.
+
+## Implémentation d'un triangle 
+
+Voux retrouverez un implémentation de cette approche naive appliqué à un simple Triangle dans le fichier `Triangle.cpp`.
+
+Voici le résulat trouvé aprés 8 min et 100 rayons.
+
+<div align="center">
+  <img src="img\triangle.png" alt="With Anti-Aliasing">
+</div>
+
+## Implémentation du Mesh
+
+
+
 

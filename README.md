@@ -453,6 +453,7 @@ Pour estimer cette intégrale par Monte Carlo, on suit les étapes suivantes :
 2. Calculer la valeur de $\(f(x)\)$ pour chaque échantillon pour obtenir $\(f(x_1), f(x_2), \ldots, f(x_N)\)$.
 3. Estimer l'espérance de $\(f(X)\)$ par la moyenne des valeurs calculées : $\(\mathbb{E}[f(X)] \approx \frac{1}{N} \sum_{i=1}^N f(x_i)\)$.
 4. L'estimation de l'intégrale est alors : $\(\int_a^b f(x) dx \approx (b - a) \frac{1}{N} \sum_{i=1}^N f(x_i)\)$.
+5. la formule qu'on utilisera uci c'est : $\(\int_a^b f(x) dx \approx (b - a) \frac{1}{N} \sum_{i=1}^N f(x_i) \frac{1}{p(x_i)}\)$ avec p(x_i) c'est probabilité de génerer xi
 
 
 La force de l'intégration de Monte Carlo réside dans sa simplicité et sa capacité à gérer des intégrales de haute dimension sans devenir significativement plus complexe, bien que le taux de convergence soit relativement lent (en $\(O(N^{-1/2})\)$).

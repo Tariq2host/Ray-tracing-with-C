@@ -9,10 +9,11 @@ main.exe
 
 
 ./scripts
-
 /scripts
-.vscode/
 
+
+.vscode/
+.vscode
 /.vscode
 
 .json

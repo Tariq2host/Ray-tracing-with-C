@@ -722,9 +722,9 @@ public:
         N = (P - centre).getNormalized();
 
         if (texture) {
-            Vector Pc = P - centre;
-            double phi = atan2(Pc[2], Pc[0]);
-            double theta = acos(Pc[1] / R);
+            Vector PC = P - centre;
+            double phi = atan2(PC[2], PC[0]);
+            double theta = acos(PC[1] / R);
             double u = (phi + M_PI) / (2 * M_PI);
             double v = (M_PI - theta) / M_PI;
             int texX = std::min(textureWidth - 1, std::max(0, int(u * textureWidth)));
@@ -761,7 +761,7 @@ public:
                 // color = (fu + fv < 1) ? Vector(0, 0, 0) : Vector(1,1,1);
             }
         }
-        else if(map_sphere_sqr)
+        if(map_sphere_sqr)
         {
             Vector Pc = P - centre;
             double phi = atan2(Pc[2], Pc[0]);

@@ -85,7 +85,7 @@ MIT
 Ce travail s'appuie sur quelques ressources qui méritent d'être reconnues :
 
 - Le polycopie du cours de monsieur Nicolas Bonneel  disponible sur ce lien [https://perso.liris.cnrs.fr/nicolas.bonneel/poly_centrale.pdf] 
-- Les videos du cours qui ont eté utilisées comme support pour la compréhension des concepts approfondie comme l'éclairage directe et indirecte. Egalement à déboguer et amélioer le code du rendu à travers quelques parties du rendu comme le problème du contraste de la scène . Ces vidéos sont disponibles sur ce lien [https://perso.liris.cnrs.fr/nicolas.bonneel/teaching.html] 
+- Les videos du cours qui ont eté utilisées comme support pour la compréhension des concepts approfondie comme l'éclairage directe et indirecte. Ces vidéos sont disponibles sur ce lien [https://perso.liris.cnrs.fr/nicolas.bonneel/teaching.html] 
 - Une ressources externe que j'ai trouvé sur internet pour comprendre plus facilement la théorie du raytracing disponible sur ce lien [https://raytracing.github.io/books/RayTracingInOneWeekend.html]
 - Une ressource externe qui m'a aidé à comprendre le mappage des shpères disponible sur ce lien [http://raytracerchallenge.com/bonus/texture-mapping.html]
 

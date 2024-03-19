@@ -7,6 +7,13 @@ __pycache__/
 .exe/
 main.exe
 
+./img
+/img
+img
+\img
+
+Note_de_cours.md
+
 ./scripts
 
 /scripts
@@ -16,6 +23,9 @@ main.exe
 
 .json
 
+runtime.txt
+
+.vscode
 # fichier mac
 .DS_Store
 

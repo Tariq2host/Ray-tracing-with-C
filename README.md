@@ -60,7 +60,7 @@ Voici le rendu finale de ce projet. Vous trouverez plus de détails dans le rapp
 
 * Fichier  `Note_de_cours.md` : ce document contient mes notes de cours
 
-* Fichier `Rapport_Tariq_CHELLALI.pdf`:  rapport final du projet.
+* Fichier `Rapport_Tariq_CHELLALI_info_graph.pdf`:  rapport final du projet.
 
 
 

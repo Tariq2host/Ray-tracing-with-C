@@ -15,7 +15,7 @@ Tariq CHELLALI
 - [Liste des Fichiers](#liste-des-fichiers)
 - [Utilisation](#utilisation)
 - [Licence](#licence)
-- [Crédit/Citation](#créditcitation)
+- [Crédit/Citation](#Credit/Citation)
 - [Feedback sur MOS 08.5](#feedback-sur-mos-085)
 
 

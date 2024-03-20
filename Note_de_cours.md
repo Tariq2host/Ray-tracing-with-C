@@ -68,18 +68,6 @@ t^2 + 2t(u \cdot CO) + \|CO\|^2 = R^2
 \]$
 
 
-
-### Classes Implémentées :
-
-Les classes mises en œuvre sont les suivantes :
-
-1. Une classe Vector : elle contient les coordonnées du vecteur et diverses méthodes pour surcharger les opérations d'addition, soustraction, produit scalaire, produit par une constante, ainsi que le calcul de la norme.
-
-2. Une classe Sphere : elle contient le centre et le rayon de la sphère.
-
-3. Une classe Ray : elle contient un point du rayon et son vecteur directeur.
-
-
 ### Notre première sphére éclairée
 
 Dans cette version, la couleur attribuée à un pixel de la caméra est modifiée pour obtenir du contraste et discerner les volumes des objets.
@@ -154,9 +142,8 @@ La stratégie adoptée est la suivante : des rayons sont émis dans toutes les d
 
 ## Surfaces Miroir :
 
-Jusqu'à présent, les surfaces représentées étaient des surfaces opaques avec un albédo. Nous proposons maintenant de représenter un autre type de surface : les surfaces miroir.
 
-Sur une telle surface, un rayon lumineux se reflète avec un angle de réflexion par rapport à la normale de la surface égal à l'angle d'incidence. Les réflexions peuvent être multiples dans le cas de plusieurs surfaces miroir.
+Sur une surface Miroir, un rayon lumineux se reflète avec un angle de réflexion par rapport à la normale de la surface égal à l'angle d'incidence. Les réflexions peuvent être multiples dans le cas de plusieurs surfaces miroir.
 
 Pour mettre en œuvre ces types de surfaces, on crée une fonction récursive appelée "getColor", qui permet de déterminer la couleur à l'intersection d'un rayon avec une surface opaque, ou le cas échéant, entre le rayon réfléchi et une surface miroir.
 
@@ -253,24 +240,17 @@ où $f$ est la BRDF (Bidirectional Reflectance Distribution Function) telle que 
 - $\( f(\mathbf{wi}, \mathbf{wo}) = f(\mathbf{wo}, \mathbf{wi}) \)$ (condition de réciprocité)
 - $\( \int f(\mathbf{wi}, \mathbf{wo}) \cdot \cos(\mathbf{wi}) \, d\mathbf{wi} \leq 1 \)$ pour tout $\(\mathbf{wo}\)$ (conservation de l'énergie).
 
+
+donc l'intégrale complète: 
+
+$L_o(\mathbf{p}, \omega_o) = L_e(\mathbf{p}, \omega_o) + \int_{\Omega} f_r(\mathbf{p}, \omega_i, \omega_o) L_i(\mathbf{p}, \omega_i) (\omega_i \cdot \mathbf{n}) \, d\omega_i$
+
+
 Cependant, cette intégrale peut être difficile voire impossible à évaluer de manière analytique en raison de sa complexité. Dans la pratique, plusieurs techniques numériques, telles que la méthode de Monte Carlo, sont utilisées pour approximer cette intégrale.
 
 ## Méthode de Monte Carlo pour l'intégration
 
 L'intégration de Monte Carlo est une technique utilisée pour estimer la valeur d'une intégrale en utilisant des méthodes statistiques et probabilistes. Cette méthode est particulièrement utile pour les intégrales complexes ou de haute dimension où les méthodes d'intégration traditionnelles sont difficiles à appliquer.
-
-Le concept de base repose sur l'interprétation de l'intégrale comme une espérance mathématique. Considérons une fonction $\(f(x)\)$ que nous voulons intégrer sur un intervalle $\([a, b]\)$. L'intégrale peut être vue comme l'espérance d'une variable aléatoire $\(f(X)\)$, où $\(X\)$ est une variable aléatoire uniformément distribuée sur $\([a, b]\)$.
-Le concept de base repose sur l'interprétation de l'intégrale comme une espérance mathématique. Considérons une fonction $\(f(x)\)$ que nous voulons intégrer sur un intervalle $\([a, b]\)$. L'intégrale peut être vue comme l'espérance d'une variable aléatoire $\(f(X)\)$, où \(X\) est une variable aléatoire uniformément distribuée sur \([a, b]\).
-
-### Formule de base
-
-L'intégrale de $\(f(x)\)$ sur $\([a, b]\)$ est donnée par :
-
-$\[
-\int_a^b f(x) dx = (b - a) \mathbb{E}[f(X)]
-\]$
-
-où $\(\mathbb{E}[f(X)]\)$ est l'espérance de $\(f(X)\)$.
 
 ### Estimation par Monte Carlo
 
@@ -278,17 +258,15 @@ Pour estimer cette intégrale par Monte Carlo, on suit les étapes suivantes :
 
 1. Générer $\(N\)$ échantillons $\(x_1, x_2, \ldots, x_N\)$ de la variable aléatoire $\(X\)$ qui suit une distribution uniforme sur $\([a, b]\)$.
 2. Calculer la valeur de $\(f(x)\)$ pour chaque échantillon pour obtenir $\(f(x_1), f(x_2), \ldots, f(x_N)\)$.
-3. Estimer l'espérance de $\(f(X)\)$ par la moyenne des valeurs calculées : $\(\mathbb{E}[f(X)] \approx \frac{1}{N} \sum_{i=1}^N f(x_i)\)$.
-4. L'estimation de l'intégrale est alors : $\(\int_a^b f(x) dx \approx (b - a) \frac{1}{N} \sum_{i=1}^N f(x_i)\)$.
-   
+
 --> la formule qu'on utilisera uci c'est : $\(\int_a^b f(x) dx \approx \frac{1}{N} \sum_{i=1}^N f(x_i) \frac{1}{p(x_i)}\)$ avec p(x_i) c'est probabilité de génerer xi
 
 
-La force de l'intégration de Monte Carlo réside dans sa simplicité et sa capacité à gérer des intégrales de haute dimension sans devenir significativement plus complexe, bien que le taux de convergence soit relativement lent (en $\(O(N^{-1/2})\)$).
-
 La méthode de Monte Carlo implique l'échantillonnage aléatoire de directions de lumière incidente wi selon une distribution probabiliste, puis la moyenne des contributions lumineuses calculées pour chaque échantillon.
 
-Le calcul de l'intensité lumineuse sur un pixel de l'écran constitue une équation de Fredholm du 2ᵉ type. En d'autres termes, le calcul de l'intensité d'un rayon nécessite le calcul de l'intensité d'un autre rayon. Il est possible de calculer l'émission du rayon arrivant sur l'écran en se limitant à un nombre de rebonds, par exemple 5 rebonds, et en calculant récursivement l'intensité du rayon, comme pour les miroirs et les surfaces transparentes.
+Le calcul de l'intensité lumineuse sur un pixel de l'écran constitue une équation de Fredholm du 2ᵉ type. En d'autres termes, le calcul de l'intensité d'un rayon nécessite le calcul de l'intensité d'un autre rayon.
+
+ Il est possible de calculer l'émission du rayon arrivant sur l'écran en se limitant à un nombre de rebonds, par exemple 5 rebonds, et en calculant récursivement l'intensité du rayon, comme pour les miroirs et les surfaces transparentes.
 
 La problématique ici est qu'un nombre infini de rayons contribuent à l'éclairage indirect, mais pour des raisons de performance, il n'est pas possible de tous les prendre en compte. Ainsi, on se limite à un rayon par surface.
 
@@ -321,15 +299,21 @@ Rappellons que le terme "surface diffuse" se réfère généralement à la mani�
 </div>
 
 
+<div align = "center">
+<img src="results\images_rendering\Eclairage_indirecte_380.png" alt="Alt Text">
+</div>
+
 ### Correction de la surface de la sphére par la méthode de Box muller
 
-On génère deux nombres aléatoires u1 et u2 suivant une loi uniforme sur [0,1] puis on calcule deux nombres aléatoires :
+On génère deux nombres aléatoires $u_1$ et $u_2$ suivant une loi uniforme sur [0,1] puis on calcule deux nombres aléatoires :
 
-x1 = σ . cos(2 π u1) . √(-2 log(u2))
+$x_1 = \sigma \cdot \cos(2 \pi u_1) \cdot \sqrt{-2 \log(u_2)}$
 
-x2 = σ . sin(2 π u1) . √(-2 log(u2))
+$x_2 = \sigma \cdot \sin(2 \pi u_1) \cdot \sqrt{-2 \log(u_2)}$
 
-x1 et x2 suivent alors une loi Gaussienne d'écart-type σ.
+$x_1$ et $x_2$ suivent alors une loi Gaussienne d'écart-type $\sigma$.
+
+En ajoutant ces deux termes à au vecteur u suivant x et y,on ajoute des échantillons déterminent un décalage par rapport au centre du pixel pour simuler la distribution de la lumière
 
 Le résultat du code ci-dessous:
 
@@ -406,6 +390,10 @@ et le résultats avec ombre douce méthode intégrale:
   <img src="img\ombre_douce_integral_miroire_transparent.png"\ alt="Without Anti-Aliasing">
 </div>
 
+<div align="center">
+  <img src="results\images_rendering\ombre_douce_r_380.png" alt="With Anti-Aliasing">
+</div>
+
 ## Depht_of_field
 À l'origine, la caméra utilisée était équipée d'un obturateur fonctionnant de manière ponctuelle. À présent, nous modélisons la caméra avec un obturateur d'ouverture non ponctuelle. La position du point C, représentant la caméra, est désormais une variable aléatoire Gaussienne centrée autour de C.
 
@@ -419,7 +407,7 @@ Avec ce nouveau dispositif, la netteté des objets varie en fonction de leur dis
   <img src="results\images_rendering\depth_of_field.png" alt="With Anti-Aliasing">
 </div>
 
-# D'un triangle à un Maillage
+# D'une sphère à un Maillage
 
 Jusqu'à maintenant, les éléments affichés dans la scène se limitaient à des sphères avec des centres et des rayons spécifiés. Pour incorporer une variété d'objets tels que des rectangles, des cylindres, ou même des formes plus élaborées, comme un chien, il est nécessaire de mettre en place le concept de maillage de surface.
 
@@ -432,37 +420,37 @@ Le fichier téléchargé porte l'extension .obj, il contient :
 - les coordonnées de texture vt
 - les faces f.
 
-## Approche Naïve
-
 La première technique implique de vérifier, pour chaque rayon dans la scène, tous les triangles du maillage afin de déterminer le triangle intersecté le plus proche, s'il y en a un.
 
 Cette approche entraîne une augmentation significative du temps de calcul en raison du grand nombre de triangles à examiner.
 
 L'intersection d'une maille (un triangle) avec un rayon est calculée en utilisant l'algorithme de Möller-Trumbore.
 
-Tous les points P du triangle ABC peuvent être exprimés à l'aide des coordonnées barycentriques α, β, et γ (α, β, γ ≥ 0) de manière à ce que :
+Tous les points P du triangle ABC peuvent être exprimés à l'aide des coordonnées barycentriques $\alpha, \beta,$ et $\gamma$ ($\alpha, \beta, \gamma \geq 0$) de manière à ce que :
 
-P = αA + βB + γC, avec la condition que : α + β + γ = 1
+$P = \alpha A + \beta B + \gamma C$, avec la condition que : $\alpha + \beta + \gamma = 1$
 
 Ou encore :
 
-P = A + βe1 + γe2
+$P = A + \beta \mathbf{e}_1 + \gamma \mathbf{e}_2$
 
-avec e1 et e2 étant les vecteurs dirigés respectivement de A vers B et de A vers C,
+avec $\mathbf{e}_1$ et $\mathbf{e}_2$ étant les vecteurs dirigés respectivement de A vers B et de A vers C,
 
-et P = O + tu,
+et $P = O + t\mathbf{u}$,
 
-ce qui donne : βe1 + γe2 - tu = O - A,
+ce qui donne :
+
+ $\beta \mathbf{e}_1 + \gamma \mathbf{e}_2 - t\mathbf{u} = O - A$,
 
 Cette équation peut être résolue en utilisant la méthode de Cramer, ce qui mène aux solutions suivantes :
 
-β = - <e2, OA ⨯ u> / <u, N>
+$\beta = - \frac{\langle \mathbf{e}_2, \mathbf{OA} \times \mathbf{u} \rangle}{\langle \mathbf{u}, \mathbf{N} \rangle}$
 
-γ = - <e1, OA ⨯ u> / <u, N>
+$\gamma = - \frac{\langle \mathbf{e}_1, \mathbf{OA} \times \mathbf{u} \rangle}{\langle \mathbf{u}, \mathbf{N} \rangle}$
 
-t = - <OA, N> / <u, N>, où < , > dénote le produit scalaire et ⨯ le produit vectoriel.
+$t = - \frac{\langle \mathbf{OA}, \mathbf{N} \rangle}{\langle \mathbf{u}, \mathbf{N} \rangle}$, où $\langle , \rangle$ dénote le produit scalaire et $\times$ le produit vectoriel.
 
-## Implémentation d'un triangle 
+## Implémentation de l'intersection triangle 
 
 Voux retrouverez un implémentation de cette approche naive appliqué à un simple Triangle dans le fichier `Triangle.cpp`.
 
@@ -472,16 +460,61 @@ Voici le résulat trouvé aprés 8 min et 100 rayons.
   <img src="results\images_rendering\triangle.png" alt="With Anti-Aliasing">
 </div>
 
-## Implémentation du Mesh
+## Implémentation du Mesh avec la méthode du bounding box
+
+<div align="center">
+  <img src="img\bouding_box_shema.png" alt="With Anti-Aliasing">
+</div>
+
 
 <div align="center">
   <img src="results\images_rendering\mesh_obj4b_chat.png" alt="With Anti-Aliasing">
 </div>
 
-## Implémentation du bvh et texture
+
+
+
+## Implémentation du mesh avec la méthode bvh
+
+Une structure appelée BVH, pour Bounding Volume Hierarchy, est construite en divisant de manière récursive un maillage en deux sous-maillages de taille identique, formant ainsi un arbre binaire. Dans cette structure, les triangles sont triés et indexés en fonction de la segmentation du maillage, ce qui optimise le rangement des triangles.
+
+Lorsqu'il s'agit de déterminer si un rayon intersecte le maillage, on explore l'arbre BVH en profondeur pour identifier si une quelconque cellule du maillage croise le rayon.
+
+<div align="center">
+  <img src="results\images_rendering\mesh_obj4b.png" alt="With Anti-Aliasing">
+</div>
+
+
+
+## Lissage de Phong
+
+Une solution pour lisser les triangles est de calculer une normale par triangle qui sera au point d'intersection rayon-triangle et une combinaison linéaire des normales à chaque sommet.
+
+<div align="center">
+  <img src="results\images_rendering\mesh_obj4b_texture.png" alt="With Anti-Aliasing">
+</div>
+
+## Implémentation des textures sur les mesh
+
+<div align="center">
+  <img src="results\images_rendering\raytracer.png" alt="With Anti-Aliasing">
+</div>
+
+## Implémentation du mappage sur une sphère
+
+Afin d'ajouter un mappage sur une sphère on prend un point sur la surface d'une sphère et le convertit en coordonnées UV sphériques. Ces coordonnées UV sont ensuite utilisées pour déterminer si le point se trouve sur une case noire ou blanche d'un motif en damier projeté sur la sphère. Le résultat est que la sphère apparaît recouverte d'un motif en damier, où la couleur de chaque point sur la sphère est déterminée par sa position dans ce motif.
+
+
+<div align="center">
+  <img src="results\images_rendering\map_cercle.png" alt="With Anti-Aliasing">
+  <img src="results\images_rendering\map_sqr.png" alt="With Anti-Aliasing">
+</div>
+
+## Mouvement de la caméra
+
+On ajuste l'orientation d'une caméra dans un espace 3D en modifiant trois vecteurs qui représentent le haut (up), la droite (right) et la direction de vue (viewDirection) de la caméra. On prend en compte deux angles : l'inclinaison verticale  et la rotation horizontale. Ces angles sont utilisés pour calculer les nouveaux vecteurs `up` et `right` en utilisant des fonctions trigonométriques. Le vecteur `viewDirection` est ensuite calculé comme le produit vectoriel de `up` et `right`, définissant ainsi la nouvelle orientation de la caméra. 
+
 
 <div align="center">
   <img src="results\images_rendering\rendu_finale_with_cam.png" alt="With Anti-Aliasing">
 </div>
-
-

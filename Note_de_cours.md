@@ -1,4 +1,4 @@
-# Ray-tracing-with-C++
+# Note du cours "Ray-tracing-with-C++"
 
 ## Notre première sphere
 
